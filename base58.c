@@ -137,7 +137,7 @@ int b58check(const void *bin, size_t binsz, const char *base58str, size_t b58sz)
 	if (binc[i] == '\0' || base58str[i] == '1')
 		return -3;
 	
-	return binc[0];
+	return 0;
 }
 
 static const char b58digits_ordered[] = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
@@ -188,18 +188,17 @@ bool b58enc(char *b58, size_t *b58sz, const void *data, size_t binsz)
 	return true;
 }
 
-bool b58check_enc(char *b58c, size_t *b58c_sz, uint8_t ver, const void *data, size_t datasz)
+bool b58check_enc(char *b58c, size_t *b58c_sz, const void *data, size_t datasz)
 {
-	uint8_t buf[1 + datasz + 0x20];
-	uint8_t *hash = &buf[1 + datasz];
+	uint8_t buf[datasz + 0x20];
+	uint8_t *hash = &buf[datasz];
 	
-	buf[0] = ver;
-	memcpy(&buf[1], data, datasz);
-	if (!my_dblsha256(hash, buf, datasz + 1))
+	memcpy(buf, data, datasz);
+	if (!my_dblsha256(hash, buf, datasz))
 	{
 		*b58c_sz = 0;
 		return false;
 	}
 	
-	return b58enc(b58c, b58c_sz, buf, 1 + datasz + 4);
+	return b58enc(b58c, b58c_sz, buf, datasz + 4);
 }
